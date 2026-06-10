@@ -10,24 +10,24 @@ jobs:
     steps:
       - name: Enable RDP and set password
         run: |
-          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0 -Force
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
           net user administrator /active:yes
           net user administrator "Island123!"
 
-      - name: Download and run Ngrok
-        env:
-          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+      - name: Download Ngrok
         run: |
           Invoke-WebRequest -Uri "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip" -OutFile ngrok.zip
           Expand-Archive ngrok.zip -DestinationPath . -Force
-          .\ngrok.exe config add-authtoken $env:NGROK_AUTH_TOKEN
-          Start-Process .\ngrok.exe -ArgumentList "tcp 3389" -NoNewWindow -PassThru
 
-      - name: Show Connection Info
+      - name: Start Ngrok and Show Info
+        env:
+          NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
         run: |
+          .\ngrok.exe config add-authtoken $env:NGROK_AUTH_TOKEN
+          Start-Process .\ngrok.exe -ArgumentList "tcp 3389" -NoNewWindow
           echo "=============================="
           echo "Username: administrator"
           echo "Password: Island123!"
-          echo "Wait 1-2 minutes and check Actions logs for Ngrok address"
+          echo "Ngrok should be running. Check the next steps in logs for the address."
           echo "=============================="
